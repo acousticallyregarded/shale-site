@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shale · Mine the rock</title>
+<meta name="description" content="Shale is a new proof-of-work algorithm designed by AI. Mine it in live test rounds on Solana devnet and win Shale POW Algo test tokens.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Onest:wght@400;600;700&family=Silkscreen&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><canvas id="logo" width="16" height="16" aria-hidden="true"></canvas>SHALE</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#live">Live round</a>
+      <a href="#mine">Mine</a>
+      <a href="#claim">Claim</a>
+      <a class="hide-sm" href="#why">Why Shale</a>
+    </nav>
+    <button class="btn gold small" id="connect-top" type="button">Connect</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="ca">
+    <span class="tag">CA</span>
+    <code id="mint-addr">7k2R41gVNxLgx2KDLEGEN4cJ99xTeE5ZtfBQ7acAhkP6</code>
+    <span class="note">devnet test token</span>
+    <button class="btn dark small" id="copy-mint" type="button">Copy</button>
+  </div>
+
+  <div class="hero">
+    <model-viewer id="quarry" src="assets/3d/quarry.glb" poster="assets/3d/quarry.png" alt="A 3D quarry diorama: layered grey stone cut open, gold nuggets on the floor, a mine cart full of gold and hanging lanterns."
+      camera-controls disable-zoom auto-rotate auto-rotate-delay="0" rotation-per-second="8deg" interaction-prompt="none"
+      camera-orbit="35deg 62deg auto" field-of-view="20deg" shadow-intensity="1.1" shadow-softness="0.8" exposure="1.05" environment-image="neutral" loading="eager"></model-viewer>
+    <div class="hero-hint">drag to spin the quarry</div>
+    <a class="bubble" href="#mine" style="left: 22%; top: 30%;"><span class="ico" style="background:#f2c230">↓</span><span><b>Get the miner</b><small>Windows, Mac, Linux</small></span></a>
+    <a class="bubble" href="#live" style="left: 72%; top: 18%;"><span class="ico" style="background:#7ee08a">●</span><span><b>Live round</b><small id="bubble-round">loading…</small></span></a>
+    <a class="bubble" href="#claim" style="left: 78%; top: 62%;"><span class="ico" style="background:#5fd3c3">$</span><span><b>Claim rewards</b><small>connect your wallet</small></span></a>
+    <a class="bubble" href="#why" style="left: 26%; top: 80%;"><span class="ico" style="background:#c7d0d6">?</span><span><b>Why Shale</b><small>the rock explains</small></span></a>
+  </div>
+
+  <div class="intro">
+    <div class="kicker">Solana devnet · new proof of work · test rounds</div>
+    <h1>Mine the rock. <em>First valid proof wins.</em></h1>
+    <p class="lede">Shale is a brand-new mining algorithm designed by AI. Every round, miners race to solve it. The first valid proof the Solana program accepts wins the round's reward in <strong>Shale POW Algo</strong> test tokens.</p>
+    <div class="cta">
+      <a class="btn gold" href="#mine">Start mining</a>
+      <a class="btn dark" href="#claim">Claim rewards</a>
+    </div>
+  </div>
+
+  <section id="live" aria-labelledby="live-h">
+    <div class="kicker"><span class="live-dot"></span>Live from Solana devnet</div>
+    <h2 id="live-h">This round</h2>
+    <div class="cards">
+      <div class="card"><span class="label">Round</span><span class="value" id="v-round">–</span><span id="v-status" class="status-pill">loading</span></div>
+      <div class="card"><span class="label">Reward</span><span class="value" id="v-reward">–</span><span class="sub">Shale test tokens</span></div>
+      <div class="card"><span class="label">Difficulty</span><span class="value" id="v-diff">–</span><span class="sub">expected attempts per win</span></div>
+      <div class="card"><span class="label">Mining vault</span><span class="value" id="v-vault">–</span><span class="sub">tokens left to win</span></div>
+      <div class="card"><span class="label">Paid so far</span><span class="value" id="v-paid">–</span><span class="sub" id="v-won">rounds won</span></div>
+      <div class="card"><span class="label">Challenge</span><span class="mono" id="v-challenge">–</span><span class="sub">unknown until the round opens</span></div>
+    </div>
+    <h3>Recent winners</h3>
+    <div class="winners" id="winners"><div class="empty">Loading winners…</div></div>
+    <p class="sub" style="color:var(--muted)" id="v-updated"></p>
+  </section>
+
+  <section id="mine" aria-labelledby="mine-h">
+    <div class="kicker">Your first win, step by step</div>
+    <h2 id="mine-h">Start mining in five minutes</h2>
+    <div class="steps">
+      <div class="step"><h3>Download the miner</h3><p>Pick your system below and unzip it. No installer.</p></div>
+      <div class="step"><h3>Set your payout wallet</h3><p>Open <code>start-mining.bat</code> (or <code>.sh</code>) and paste your Solana wallet address, such as Phantom or Solflare.</p></div>
+      <div class="step"><h3>Start it</h3><p>Double-click <code>start-mining.bat</code>. It creates a mining key and shows its address.</p></div>
+      <div class="step"><h3>Add devnet SOL</h3><p>Send that address free devnet SOL from <a href="https://faucet.solana.com" rel="noopener">faucet.solana.com</a>. It pays the claim fees. Mining starts on its own.</p></div>
+      <div class="step"><h3>Win and claim</h3><p>When you win a round, come back here, connect your wallet and claim your tokens.</p></div>
+    </div>
+    <div class="dl">
+      <div class="card"><span class="os">Windows</span><span class="sub">64-bit · .zip</span><span class="status-pill wait">coming soon</span></div>
+      <div class="card"><span class="os">macOS</span><span class="sub">Apple silicon and Intel · .tar.gz</span><span class="status-pill wait">coming soon</span></div>
+      <div class="card"><span class="os">Linux</span><span class="sub">64-bit · .tar.gz</span><span class="status-pill wait">coming soon</span></div>
+    </div>
+    <p class="sub" style="color:var(--muted)">Downloads arrive with the next miner release, together with on-site claiming. The miner only connects to Solana devnet and refuses mainnet.</p>
+  </section>
+
+  <section id="claim" aria-labelledby="claim-h">
+    <div class="kicker">Rewards</div>
+    <h2 id="claim-h">Claim your Shale</h2>
+    <div class="claim">
+      <div class="panel">
+        <span class="label" style="font:0.72rem var(--pixel);color:var(--muted)">CLAIMABLE</span>
+        <span class="big" id="c-claimable">–</span>
+        <button class="btn gold" id="c-connect" type="button">Connect wallet</button>
+        <button class="btn gold" id="c-claim" type="button" hidden>Claim</button>
+        <div class="msg" id="c-msg">Connect Phantom, Solflare or Backpack, switched to devnet.</div>
+      </div>
+      <div class="panel">
+        <div class="card" style="padding:0;border:0;background:none"><span class="label">Wallet</span><span class="mono" id="c-wallet">not connected</span></div>
+        <div class="card" style="padding:0;border:0;background:none"><span class="label">Shale in wallet</span><span class="value" id="c-balance">–</span></div>
+        <div class="card" style="padding:0;border:0;background:none"><span class="label">Rounds won</span><span class="value" id="c-wins">–</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="why" aria-labelledby="why-h">
+    <div class="kicker">Why Shale is different</div>
+    <h2 id="why-h">A mining algorithm designed by AI</h2>
+    <div class="novel">
+      <div class="card"><h3>Built like rock</h3><p>Every two weeks the network lays down a 6 GiB dataset in layers, each mixed from random pieces of the layers beneath. Mining hops through it at random, 32 reads per attempt. Speed comes from memory, which GPUs and CPUs already have and custom chips cannot make much faster.</p></div>
+      <div class="card"><h3>No shortcut</h3><p>Older memory-hard algorithms let any piece of the dataset be computed on its own, so nodes can check blocks cheaply. That also gives attackers a shortcut. Shale's dataset can only be built in order. Nodes keep a small fingerprint instead, and every block carries a receipt of what it read.</p></div>
+      <div class="card"><h3>Designed and attacked by agents</h3><p>Independent AI designers proposed, hostile AI critics attacked, and auditors checked every novelty claim with logged searches. The result is one genuinely new mechanism, stated as "no prior art found", not "proven first".</p></div>
+    </div>
+    <div class="callout"><p>Shale is verified inside the Solana program itself, using the same code as the miner. A copied solution cannot steal a reward: the winner's key is part of the work.</p></div>
+    <div class="boss">
+      <div class="boss-stage">
+        <model-viewer id="mascot" src="assets/3d/mascot.glb" poster="assets/3d/mascot.png" alt="Shaly, the Shale mascot: a chubby layered-rock creature with a yellow hard hat and a pickaxe."
+          camera-controls disable-zoom auto-rotate rotation-per-second="20deg" interaction-prompt="none"
+          camera-orbit="0deg 80deg auto" shadow-intensity="1" exposure="1.1" environment-image="neutral" loading="lazy"></model-viewer>
+        <div class="speech" id="speech" role="status" aria-live="polite">gm, miner. Click me.</div>
+      </div>
+      <div class="boss-text">
+        <div class="kicker">Meet Shaly</div>
+        <h3>The rock explains</h3>
+        <p>Drag to spin him. Click him for a fact about how Shale works.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>Test network only.</strong> Shale POW Algo tokens on Solana devnet are test tokens with no value. They cannot be bought, sold or redeemed. Nothing here is an offer or a financial product.</p>
+    <p>Program <code>5XVwNCE51g6fjbjbt9GGk11wLqPaxLojKDGK3qV1o9yn</code> on <a href="https://explorer.solana.com/address/5XVwNCE51g6fjbjbt9GGk11wLqPaxLojKDGK3qV1o9yn?cluster=devnet" rel="noopener">Solana Explorer</a>.</p>
+  </footer>
+</main>
+
+<script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
