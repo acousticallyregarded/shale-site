@@ -9,6 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Onest:wght@400;600;700&family=Silkscreen&family=JetBrains+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.169.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/" } }
+</script>
 </head>
 <body>
 <header class="top">
@@ -60,8 +63,8 @@
       <div class="card"><span class="label">Round</span><span class="value" id="v-round">–</span><span id="v-status" class="status-pill">loading</span></div>
       <div class="card"><span class="label">Reward</span><span class="value" id="v-reward">–</span><span class="sub">Shale test tokens</span></div>
       <div class="card"><span class="label">Difficulty</span><span class="value" id="v-diff">–</span><span class="sub">expected attempts per win</span></div>
-      <div class="card"><span class="label">Mining vault</span><span class="value" id="v-vault">–</span><span class="sub">tokens left to win</span></div>
-      <div class="card"><span class="label">Paid so far</span><span class="value" id="v-paid">–</span><span class="sub" id="v-won">rounds won</span></div>
+      <div class="card"><span class="label">Mining vault</span><span class="value" id="v-vault">–</span><span class="sub" id="v-vault-sub">tokens left to win</span></div>
+      <div class="card"><span class="label">Won so far</span><span class="value" id="v-paid">–</span><span class="sub" id="v-won">rounds won</span></div>
       <div class="card"><span class="label">Challenge</span><span class="mono" id="v-challenge">–</span><span class="sub">unknown until the round opens</span></div>
     </div>
     <h3>Recent winners</h3>
@@ -77,14 +80,14 @@
       <div class="step"><h3>Set your payout wallet</h3><p>Open <code>start-mining.bat</code> (or <code>.sh</code>) and paste your Solana wallet address, such as Phantom or Solflare.</p></div>
       <div class="step"><h3>Start it</h3><p>Double-click <code>start-mining.bat</code>. It creates a mining key and shows its address.</p></div>
       <div class="step"><h3>Add devnet SOL</h3><p>Send that address free devnet SOL from <a href="https://faucet.solana.com" rel="noopener">faucet.solana.com</a>. It pays the claim fees. Mining starts on its own.</p></div>
-      <div class="step"><h3>Win and claim</h3><p>When you win a round, come back here, connect your wallet and claim your tokens.</p></div>
+      <div class="step"><h3>Win and claim</h3><p>Each round you win is credited to your payout wallet on-chain, and the credits add up. Come back here, connect that wallet (set to Devnet) and click Claim to receive them all.</p></div>
     </div>
     <div class="dl">
-      <div class="card"><span class="os">Windows</span><span class="sub">64-bit · .zip</span><span class="status-pill wait">coming soon</span></div>
+      <a class="card" href="downloads/shale-miner-windows-x64.zip"><span class="os">Windows</span><span class="sub">64-bit · .zip</span></a>
       <div class="card"><span class="os">macOS</span><span class="sub">Apple silicon and Intel · .tar.gz</span><span class="status-pill wait">coming soon</span></div>
-      <div class="card"><span class="os">Linux</span><span class="sub">64-bit · .tar.gz</span><span class="status-pill wait">coming soon</span></div>
+      <a class="card" href="downloads/shale-miner-linux-x64.tar.gz"><span class="os">Linux</span><span class="sub">64-bit · .tar.gz</span></a>
     </div>
-    <p class="sub" style="color:var(--muted)">Downloads arrive with the next miner release, together with on-site claiming. The miner only connects to Solana devnet and refuses mainnet.</p>
+    <p class="sub" style="color:var(--muted)">Check your download against <a href="downloads/SHA256SUMS.txt">SHA256SUMS.txt</a>. The miner only connects to Solana devnet and refuses mainnet.</p>
   </section>
 
   <section id="claim" aria-labelledby="claim-h">
@@ -95,13 +98,16 @@
         <span class="label" style="font:0.72rem var(--pixel);color:var(--muted)">CLAIMABLE</span>
         <span class="big" id="c-claimable">–</span>
         <button class="btn gold" id="c-connect" type="button">Connect wallet</button>
-        <button class="btn gold" id="c-claim" type="button" hidden>Claim</button>
-        <div class="msg" id="c-msg">Connect Phantom, Solflare or Backpack, switched to devnet.</div>
+        <button class="btn gold" id="c-claim" type="button" hidden disabled>Claim</button>
+        <div class="msg" id="c-msg" role="status" aria-live="polite">Connect Phantom, Solflare or Backpack. Set the wallet to <strong>Devnet</strong> first: these are devnet test tokens.</div>
+        <p class="sub" style="color:var(--muted);margin:0">Connect the wallet you set as <code>PAYOUT</code> in the start script (or the mining wallet if you left it empty). Wins are credited on-chain as they happen; Claim sends everything credited to that wallet's Shale token account in one transaction. The site never asks for a private key or recovery phrase.</p>
       </div>
       <div class="panel">
         <div class="card" style="padding:0;border:0;background:none"><span class="label">Wallet</span><span class="mono" id="c-wallet">not connected</span></div>
         <div class="card" style="padding:0;border:0;background:none"><span class="label">Shale in wallet</span><span class="value" id="c-balance">–</span></div>
-        <div class="card" style="padding:0;border:0;background:none"><span class="label">Rounds won</span><span class="value" id="c-wins">–</span></div>
+        <div class="card" style="padding:0;border:0;background:none"><span class="label">Wins credited</span><span class="value" id="c-wins">–</span></div>
+        <div class="card" style="padding:0;border:0;background:none"><span class="label">Claimed so far</span><span class="value" id="c-claimed">–</span></div>
+        <div class="card" style="padding:0;border:0;background:none"><span class="label">Devnet SOL for fees</span><span class="value" id="c-sol">–</span></div>
       </div>
     </div>
   </section>
@@ -117,15 +123,13 @@
     <div class="callout"><p>Shale is verified inside the Solana program itself, using the same code as the miner. A copied solution cannot steal a reward: the winner's key is part of the work.</p></div>
     <div class="boss">
       <div class="boss-stage">
-        <model-viewer id="mascot" src="assets/3d/mascot.glb" poster="assets/3d/mascot.png" alt="Shaly, the Shale mascot: a chubby layered-rock creature with a yellow hard hat and a pickaxe."
-          camera-controls disable-zoom auto-rotate rotation-per-second="20deg" interaction-prompt="none"
-          camera-orbit="0deg 80deg auto" shadow-intensity="1" exposure="1.1" environment-image="neutral" loading="lazy"></model-viewer>
+        <div id="golem-stage" class="golem-stage" aria-label="Shaly, the Shale rock golem, beside a block of layered shale. Click to make him punch the block."></div>
         <div class="speech" id="speech" role="status" aria-live="polite">gm, miner. Click me.</div>
       </div>
       <div class="boss-text">
         <div class="kicker">Meet Shaly</div>
         <h3>The rock explains</h3>
-        <p>Drag to spin him. Click him for a fact about how Shale works.</p>
+        <p>Click Shaly. He punches the shale and knocks loose a fact about how Shale works.</p>
       </div>
     </div>
   </section>
