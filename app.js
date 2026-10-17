@@ -1,5 +1,6 @@
 // Live round data from Solana devnet and the wallet panel.
 import { parseDeployment, parseRound, parseRewards, tokenAmount, deriveStatus, expectedAttempts, fromBase64, STATUS, OP_WITHDRAW } from "./lib/status.js";
+import { nextBits } from "./lib/asert.js";
 
 const RPC = "https://api.devnet.solana.com";
 const IDS = {
@@ -71,6 +72,61 @@ const short = (a) => a.slice(0, 4) + "…" + a.slice(-4);
 let lastRound = null;
 let lastDep = null;
 
+// ---------- round time and difficulty trend ----------
+// Devnet's slot time, measured over the last 15 minutes (getRecentPerformanceSamples);
+// 238.4 ms is the 12-hour mean measured on 17 October 2026, used until the first answer.
+let slotMs = 238.4;
+async function measureSlot() {
+  try {
+    const s = await rpc("getRecentPerformanceSamples", [15]);
+    let slots = 0, secs = 0;
+    for (const x of s) { slots += x.numSlots; secs += x.samplePeriodSecs; }
+    if (slots > 0) slotMs = (secs * 1000) / slots;
+  } catch { /* keep the last value */ }
+}
+measureSlot();
+setInterval(measureSlot, 600000);
+const secs = (slots) => Math.round((slots * slotMs) / 1000);
+const le256 = (b) => { let t = 0n; for (let i = 31; i >= 0; i--) t = t * 256n + BigInt(b[i]); return t; };
+const median = (a) => { const s = [...a].sort((x, y) => x - y); return s.length ? (s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2) : null; };
+
+/** The round-time and trend cards: the target the program steers the average toward, the
+ *  measured periods of the recent rounds in the on-chain history, and what the program's
+ *  rule (lib/asert.js, the same integers) would do if the open round completed now. */
+function showTiming(dep, r, slot) {
+  const adjusting = dep.adjTargetSlots > 0 && dep.adjHalflifeSlots > 0;
+  const hs = [...r.history].sort((a, b) => a.roundId - b.roundId);
+  const periods = [];
+  for (let i = 1; i < hs.length; i++) if (hs[i].roundId === hs[i - 1].roundId + 1) periods.push(Number(hs[i].completedSlot - hs[i - 1].completedSlot));
+  const recent = periods.slice(-10);
+  const mean = recent.length ? recent.reduce((a, b) => a + b, 0) / recent.length : null;
+  const measured = recent.length ? `last ${recent.length} rounds: median ${secs(median(recent))} s, average ${secs(mean)} s` : "no recent rounds yet";
+  if (adjusting) {
+    const period = dep.adjTargetSlots + Number(dep.seedDelay);
+    $("v-period").textContent = `${secs(period)} s target`;
+    $("v-period-sub").textContent = `the average the difficulty is steered toward; single rounds vary a lot. ${measured}`;
+  } else {
+    $("v-period").textContent = recent.length ? `${secs(median(recent))} s` : "–";
+    $("v-period-sub").textContent = `difficulty fixed by the operator; ${measured}`;
+  }
+  if (!adjusting) {
+    $("v-trend").textContent = "fixed";
+    $("v-trend-sub").textContent = "automatic adjustment is off";
+    return;
+  }
+  if (r.status !== STATUS.OPEN) {
+    $("v-trend").textContent = "adjusting";
+    $("v-trend-sub").textContent = "the next difficulty is set when the next round opens";
+    return;
+  }
+  const e = slot - r.seedHashSlot;
+  const next = nextBits(r.bits, e, dep.adjTargetSlots, dep.adjHalflifeSlots, le256(dep.maxTarget));
+  const ratio = expectedAttempts(next) / expectedAttempts(r.bits);
+  const pct = Math.round((ratio - 1) * 100);
+  $("v-trend").textContent = pct > 0 ? `▲ ${pct}% harder` : pct < 0 ? `▼ ${-pct}% easier` : "steady";
+  $("v-trend-sub").textContent = `next round, if this one is solved now (${secs(Number(e))} s in); adjusts every round`;
+}
+
 async function refresh() {
   try {
     const [accs, slot] = await Promise.all([
@@ -91,6 +147,7 @@ async function refresh() {
     $("v-status").className = "status-pill " + (open ? "open" : "wait");
     $("v-reward").textContent = fmtTokens(r.reward || dep.reward);
     $("v-diff").textContent = fmtAttempts(expectedAttempts(r.bits || dep.bits));
+    showTiming(dep, r, BigInt(slot));
     // Rewards credited and not yet claimed stay in the vault for their winners.
     const owed = r.outstanding ?? 0n;
     $("v-vault").textContent = fmtTokens(vault > owed ? vault - owed : 0n);
